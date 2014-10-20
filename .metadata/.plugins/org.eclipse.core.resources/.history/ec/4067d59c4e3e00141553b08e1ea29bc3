@@ -1,0 +1,16 @@
+<?php
+
+class HTMLView{
+	public function echoHTML(){
+		echo "
+			<!DOCTYPE html>
+			<html>
+			<body>
+				<p>test</p>
+			</body>
+			</html>";
+	}
+}
+//require_once("HTMLView.php");
+$view = new HTMLView();
+$view->echoHTML("Hello World");

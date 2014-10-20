@@ -1,0 +1,12 @@
+<?php
+
+require_once("/common/HTMLView.php");
+
+$view = new HTMLView();
+
+$HTMLBody = "<p>test!<p>";
+
+$view->echoHTML($HTMLBody);
+
+
+

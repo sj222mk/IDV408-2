@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="com.aptana.php.debug.core.launching.webPageLaunch">
+<booleanAttribute key="ATTR_AUTO_GENERATED_URL" value="true"/>
+<listAttribute key="ATTR_HTTP_GET"/>
+<listAttribute key="ATTR_HTTP_POST"/>
+<stringAttribute key="ATTR_SERVER_BASE_URL" value=""/>
+<stringAttribute key="ATTR_SERVER_FILE_NAME" value=""/>
+<booleanAttribute key="ATTR_USE_SPECIFIC_FILE" value="true"/>
+<stringAttribute key="com.aptana.php.debug.configurationDelegateClass" value="org2.eclipse.php.internal.debug.core.launching.PHPWebPageLaunchDelegate"/>
+<stringAttribute key="com.aptana.php.debug.php_debugger_id" value="org2.eclipse.php.debug.core.zendDebugger"/>
+<stringAttribute key="debugPages" value="debugAllPages"/>
+<booleanAttribute key="firstLineBreakpoint" value="true"/>
+<listAttribute key="org.eclipse.debug.ui.favoriteGroups">
+<listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
+<listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
+</listAttribute>
+<booleanAttribute key="org2.eclipse.php.debug.core.OpenInBrowser" value="true"/>
+<booleanAttribute key="org2.eclipse.php.debug.core.RunWithDebugInfo" value="true"/>
+<stringAttribute key="org2.eclipse.php.debug.core.SSHTunnelPassword" value=""/>
+<stringAttribute key="org2.eclipse.php.debug.core.SSHTunnelUserName" value=""/>
+<booleanAttribute key="org2.eclipse.php.debug.core.UseExternalBrowser" value="false"/>
+<booleanAttribute key="org2.eclipse.php.debug.core.UseSSHTunnel" value="false"/>
+</launchConfiguration>

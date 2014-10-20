@@ -1,0 +1,13 @@
+<?php
+
+class HTMLView{
+	public function echoHTML($body){
+		echo "
+			<!DOCTYPE html>
+			<html>
+			<body>
+				<p>$body</p>
+			</body>
+			</html>";
+	}
+}
