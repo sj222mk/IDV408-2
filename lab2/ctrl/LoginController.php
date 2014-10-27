@@ -2,10 +2,10 @@
 
 namespace controller;
 
-require_once("model/LoginModel.php");
-require_once("view/LoginView.php");
-require_once("view/LogoutView.php");
-require_once("view/CookieStorage.php"); 
+require_once("./model/LoginModel.php");
+require_once("./view/LoginView.php");
+require_once("./view/LogoutView.php");
+require_once("./view/CookieStorage.php"); 
 
 class LoginController {
 	private $view;

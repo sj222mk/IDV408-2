@@ -6,7 +6,7 @@ class HTMLView{
 	public function echoHTML($body, $footer){
 		echo "
 			<!DOCTYPE html>
-			<meta charset='utf-8'>
+			<meta charset=\"utf-8\">
 			<html>
 			<body>
 				<header>

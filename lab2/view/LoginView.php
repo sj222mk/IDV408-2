@@ -9,6 +9,7 @@ class LoginView {
 	private $username = "";
 	private static $userID = 'userID';
 	private static $password = 'PasswordID'; 
+	private static $outLoggedMessage = "Du har nu loggat ut";
 	
 	public function __construct(CookieStorage $cookies) {
 		$this->cookies = $cookies;
@@ -70,7 +71,9 @@ class LoginView {
 	
 	public function showLogin($message) {
 		$this->errorMessage = $this->setNewestErrorMessage($message);
-		$this->cookies->save(self::$messageCookie, $this->errorMessage);
+		if($this->errorMessage != self::$outLoggedMessage){
+			$this->cookies->save(self::$messageCookie, $this->errorMessage);
+		}
 		
 		$ret = "<header>
 					<h2>Ej inloggad<h2> 
