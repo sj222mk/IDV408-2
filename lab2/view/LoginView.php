@@ -1,46 +1,59 @@
 <?php
 
-require_once("CookieStorage.php");
+namespace view;
 
 class LoginView {
-	private $model;
 	private $cookies;
-	private $message;
 	private $errorMessage = "";
+	private static $messageCookie = "Message";
+	private $username = "";
+	private static $userID = 'userID';
+	private static $password = 'PasswordID'; 
 	
-	public function __construct(LoginModel $model) {
-		$this->model = $model;
-		$this->cookies = new \view\CookieStorage();
+	public function __construct(CookieStorage $cookies) {
+		$this->cookies = $cookies;
 	}
 
 	public function didUserPressLogin() {
 		
 		if (isset($_POST["login"])){
-			if($_POST["UserID"] != "" && $_POST["PasswordID"] != ""){
+			if($_POST[self::$userID] != ""){
+				$this->username = $_POST[self::$userID];
+			}
+			if($_POST[self::$userID] != "" && $_POST[self::$password] != ""){
 				return true;
 			}
 			else{
-				if($_POST["UserID"] === ""){
+				if($_POST[self::$userID] === ""){
+					$this->username = $_POST[self::$userID];
 					$this->errorMessage = 'Användarnamn saknas';
 				}
-				else{ 
+				else{
 					$this->errorMessage = 'Lösenord saknas';
 				}
-			$this->cookies->save("mess", $this->errorMessage);
+			$this->cookies->save(self::$messageCookie, $this->errorMessage);
 			}
 		return false;
 		}
 	}
 	
 	public function getUserData(){
-		$data = array("user" => $_POST["UserID"], "pw" => $_POST["PasswordID"]);	
-		return $data;
+		$data = array("user" => $_POST[self::$userID], "pw" => $_POST[self::$password]);
+		if ($data != ""){
+			return $data;
+		}	
+		return false;
 	}
 	
+	public function didUserWantToBeRemembered(){
+	 	if(isset($_POST['AutologinID'])){
+			return true;
+		}
+	 }
+	 
 	//Kontroll av mest aktuellt felmeddelande (vissa sätts av controllern, vissa av vyn - om de saknas kollas cookies!)
-	public function setNewestErrorMessage($message){
+	private function setNewestErrorMessage($message){
 		$userMessage = "";
-		$mess = "mess";
 		
 		if($message != ""){
 			$userMessage = $message;
@@ -49,29 +62,32 @@ class LoginView {
 			$userMessage = $this->errorMessage;	
 		}
 		else{
-			$userMessage = $this->cookies->load($mess); 
+			$userMessage = $this->cookies->loadMessage(self::$messageCookie); 
 		}
 		
-		$this->cookies->save($mess, $userMessage);
 		return $userMessage;
 	}
 	
 	public function showLogin($message) {
 		$this->errorMessage = $this->setNewestErrorMessage($message);
+		$this->cookies->save(self::$messageCookie, $this->errorMessage);
 		
-		$ret = "<fieldset>
-			<form method='post'>
-			<legend>Login - Skriv in användarnamn och lösenord</legend>
-			<p>$this->errorMessage</p> 
-			<label for='UserID'>Lösenord :</label>
-			<input id='UserID' name='UserID' type='text' value=''>
-			<label for='PasswordID'>Lösenord :</label>
-			<input id='PasswordID' name='PasswordID' type='password' value=''>
-			<label for='AutologinID'>Håll mig inloggad :</label>
-			<input id='AutologinID' type='checkbox'>
-			<button type='submit'name='login'>Logga in</button>
-			</form>
-			</fieldset>";
+		$ret = "<header>
+					<h2>Ej inloggad<h2> 
+				</header>
+				<fieldset>
+					<form method='post'>
+					<legend>Login - Skriv in användarnamn och lösenord</legend>
+					<p>$this->errorMessage</p> 
+					<label for='UserID'>Användarnamn :</label>
+					<input id='UserID' name='userID' type='text' value=$this->username>
+					<label for='PasswordID'>Lösenord :</label>
+					<input id='PasswordID' name='PasswordID' type='password' value=''>
+					<label for='AutologinID'>Håll mig inloggad :</label>
+					<input id='AutologinID' name='AutologinID' type='checkbox'>
+					<button type='submit'name='login'>Logga in</button>
+					</form>
+				</fieldset>";
 		
 		return $ret;
 		}

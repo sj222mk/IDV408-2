@@ -36,7 +36,16 @@ class LoginController {
 	}
 
 	public function doLogin() {
+		
+		/*if($this->isLoggedIn === TRUE){
+			return $this->doLogout();		
+			//return $this->logoutView->showLogout($this->textMessage);
 			
+		}*/
+		
+		//$this->isLoggedIn = FALSE;
+		
+		
 		//Kontrollera om användaren är inloggad
 		if($this->checkIfUserIsLoggedIn() === false){
 			$this->isLoggedIn = FALSE;
@@ -62,12 +71,15 @@ class LoginController {
 				return $this->loginView->showLogin($this->textMessage);
 			}
 		}
+		
 		return $this->doLogout();
 	}
 	
 	private function setToLogout(){
 		//Ändra inställningar inför byte av vy
-		if($this->isLoggedIn = TRUE){
+		if(/*$this->cookies->remove(self::$messageCookie) && */$this->isLoggedIn = TRUE){
+			//if($this->model->save)											//spara i session
+		
 			return true;
 		}
 		return false;
@@ -78,7 +90,9 @@ class LoginController {
 		while($this->isLoggedIn === TRUE){
 			if ($this->logoutView->didUserPressLogout()){
 				$this->model->unsetSession();					
+				
 				$this->cookies->removeUser();
+				
 				$this->textMessage = self::$outlogMessage;
 				$this->savedSession = false;
 				$this->isLoggedIn = FALSE;	
@@ -87,36 +101,42 @@ class LoginController {
 			}
 			return $this->logoutView->showLogout($this->textMessage, $this->userName);
 		}
+
 	}
 
 	private function checkIfUserIsLoggedIn(){
 		$clientSession;
 		$userSession;
 		
-		if($this->cookies->checkUserCookie() === false){
-			$clientSession = $this->model->doesSessionExist();
-			if($clientSession != false){
-				$this->userName = $clientSession;	
-				$this->isLoggedIn = TRUE;
-				return true;
-			}
-		return false;
-		}
-		else{
+		if($this->cookies->checkUserCookie()){
 			$this->userData = $this->cookies->loadUserFromCookie();
 			if(!$this->userData === false){
 				$clientSession = $this->model->doesClientExist($this->userData);
-				if($clientSession['time'] === true){
+				if($clientSession){
 					$this->textMessage = self::$cookieMessage;
+					$this->userName = $clientSession;
+					$this->isLoggedIn = TRUE;
+					return true;
 				}
-				$this->userName = $clientSession['user'];
-				$this->isLoggedIn = TRUE;
-				return true;
+				else{
+					$this->textMessage = self::$notCookieMessage;
+					return false;
+				}
 			}
 			else{
 				$this->textMessage = self::$notCookieMessage;
 				return false;
 			}	
+		}
+		else{
+			$clientSession = $this->model->doesSessionExist();
+				if($clientSession != false){
+					$this->userName = $clientSession;	
+					$this->isLoggedIn = TRUE;
+					return true;
+			}
+		
+		return false;
 		}
 	}
 	
@@ -156,9 +176,8 @@ class LoginController {
 				return true;
 			}
 	}	
-	
 	private function userDontWantToBeRemembered(){
-		if($this->model->saveSession($this->userName)){
+		if($this->model->saveSession($this->sessionArray, $this->userName)){
 			if($this->textMessage === ""){
 				$this->savedSession = FALSE;
 				$this->textMessage = self::$validUserMessage;
@@ -167,4 +186,15 @@ class LoginController {
 		}
 		return false;
 	}
+		
+		
+		
+		//return $this->logoutView->showLogout($this->textMessage);
+		//$this->cookies->remove("Message");
+		//$this->doLogout();
+		//$this->cookies->remove("Message");
+			
+		
+			
+
 }

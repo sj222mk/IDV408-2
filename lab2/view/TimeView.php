@@ -1,5 +1,7 @@
 <?php
 
+namespace view;
+
 class TimeView{
 	private $time;
 	
