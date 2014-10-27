@@ -1,8 +1,8 @@
 <?php
 
-require_once "/customers/3/d/d/ssalander.se//httpd.www/courses/1dv408-2/common/HTMLView.php";
-require_once "/customers/3/d/d/ssalander.se//httpd.www/courses/1dv408-2/view/TimeView.php";
-require_once "/customers/3/d/d/ssalander.se//httpd.www/courses/1dv408-2/ctrl/LoginController.php";
+require_once "/common/HTMLView.php";
+require_once "/view/TimeView.php";
+require_once "/ctrl/LoginController.php";
 
 session_name("MySession");
 session_start();
