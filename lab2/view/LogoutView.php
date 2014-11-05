@@ -33,7 +33,7 @@ class LogoutView {
 					<h2>$this->username är inloggad</h2> 
 				</header>
 				<p>$this->userMessage</p>
-				<form action='' method='post'>
+				<form method='post'>
 				<input type='submit' value='Logga ut!' name='logout'/>
 				</form>";
 	

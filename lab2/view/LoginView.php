@@ -4,8 +4,8 @@ namespace view;
 
 class LoginView {
 	private $cookies;
-	private $userMessage = "";
-	private $username = "";
+	private $userMessage = '';
+	private $username = '';
 	
 	private static $userID = 'userID';
 	private static $password = 'PasswordID'; 
@@ -94,6 +94,11 @@ class LoginView {
 	
 	public function showLogin() {
 		$userMessage = $this->setNewestUserMessage();
+		$user = "''";
+		
+		if($this->username != ""){
+			$user = $this->username;
+		}
 		
 		$ret = "<header>
 					<h2>Ej inloggad</h2> 
@@ -103,7 +108,7 @@ class LoginView {
 					<form method='post'>
 					<p>$this->userMessage</p> 
 					<label for='UserID'>Användarnamn :</label>
-					<input autofocus id='UserID' name='userID' type='text' value=$this->username>
+					<input autofocus id='UserID' name='userID' type='text' value=$user >
 					<label for='PasswordID'>Lösenord :</label>
 					<input id='PasswordID' name='PasswordID' type='password' value=''>
 					<label for='AutologinID'>Håll mig inloggad :</label>
