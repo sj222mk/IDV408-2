@@ -6,23 +6,28 @@ require_once("./model/LoginModel.php");
 require_once("./view/LoginView.php");
 require_once("./view/LogoutView.php");
 require_once("./view/CookieStorage.php"); 
+require_once("./view/ServerStorage.php");
 
 class LoginController {
-	private $view;
+	private $cookies;
+	private $loginView;
+	private $logoutView;
 	private $model;
-	private $storage;
+	private $servers;
+	
 	private $isLoggedIn;
-	private $textMessage = "";
 	private $savedSession;
-	private $userData = "";
-	private $userValid;
-	private $userName;
 	private $sessionArray;
+	private $textMessage = "";
+	private $userData = "";
+	private $userName;
+	private $userServerSettings;
+	private $userValid;
 	
 	//Meddelanden till användaren efter validering och händelser
 	private static $messageCookie = "Message";
 	private static $outlogMessage = "Du har nu loggat ut";
-	private static $cookieMessage = "Inloggning via cookie";
+	private static $cookieMessage = "Inloggning lyckades via cookies";
 	private static $notCookieMessage = "Felaktig information i cookie";
 	private static $notValidMessage = "Felaktigt användarnamn eller lösenord";
 	private static $savedSessionMessage = "Inloggning lyckades och vi kommer ihåg dig nästa gång";
@@ -33,91 +38,109 @@ class LoginController {
 		$this->cookies = new \view\CookieStorage();
 		$this->loginView = new \view\LoginView($this->cookies);
 		$this->logoutView = new \view\LogoutView($this->cookies);
+		$this->servers = new \view\ServerStorage();
 	}
 
 	public function doLogin() {
-			
+		//Kolla av vem användaren är
+		$this->userServerSettings = $this->servers->getUserServerSettings(); 
+		
 		//Kontrollera om användaren är inloggad
-		if($this->checkIfUserIsLoggedIn() === false){
+		if(!$this->checkIfUserIsLoggedIn()){ 
 			$this->isLoggedIn = FALSE;
 		}
-				
+						
 		while($this->isLoggedIn === FALSE){
 		
 		//Hantera indata
 			if($this->checkIfUserPressedLogin() === true){
 				//Validerar användaruppgifter	
 				if($this->model->checkUser($this->userData) === true){
-					if ($this->saveSessionAndSetMessage() && $this->setToLogout()){
+					if ($this->saveSessionAndSetMessage()){
 						//Gå vidare till inloggad-sida
 						return $this->doLogout();
 					}
 				}
 				else{
 					$this->textMessage = self::$notValidMessage;
-					return $this->loginView->showLogin($this->textMessage);
+					return $this->login();
 				}
 			}
 			else{
-				return $this->loginView->showLogin($this->textMessage);
+				return $this->login();
 			}
 		}
+		//$this->isLoggedIn === TRUE;
 		return $this->doLogout();
 	}
 	
-	private function setToLogout(){
-		//Ändra inställningar inför byte av vy
-		if($this->isLoggedIn = TRUE){
-			return true;
-		}
-		return false;
-	}
-	
+	//Funktionaliteten på logga-ut-sidan
 	private function doLogout(){
 		
 		while($this->isLoggedIn === TRUE){
 			if ($this->logoutView->didUserPressLogout()){
-				$this->model->unsetSession();					
-				$this->cookies->removeUser();
-				$this->textMessage = self::$outlogMessage;
-				$this->savedSession = false;
-				$this->isLoggedIn = FALSE;	
-					
-				return $this->loginView->showLogin($this->textMessage);						
+				if($this->model->unsetSession() &&	
+					$this->model->removeRememberedUserSession($this->userName) &&				
+					$this->cookies->removeUserCookies())
+					{
+					$this->textMessage = self::$outlogMessage;
+					$this->savedSession = false;
+					$this->isLoggedIn = FALSE;	
+				
+					return $this->login();
+				}						
 			}
-			return $this->logoutView->showLogout($this->textMessage, $this->userName);
+			return $this->logout();
 		}
 	}
-
-	private function checkIfUserIsLoggedIn(){
-		$clientSession;
-		$userSession;
-		
-		if($this->cookies->checkUserCookie() === false){
-			$clientSession = $this->model->doesSessionExist();
-			if($clientSession != false){
-				$this->userName = $clientSession;	
-				$this->isLoggedIn = TRUE;
-				return true;
-			}
-		return false;
+	
+	private function login(){
+		if($this->textMessage != ""){
+			$this->loginView->setUserMessage($this->textMessage);
 		}
-		else{
-			$this->userData = $this->cookies->loadUserFromCookie();
-			if(!$this->userData === false){
-				$clientSession = $this->model->doesClientExist($this->userData);
-				if($clientSession['time'] === true){
-					$this->textMessage = self::$cookieMessage;
+		if($this->userName != ""){
+			$this->loginView->setUsername($this->userName);
+		}
+		$this->textMessage = "";
+		return $this->loginView->showLogin();
+	}
+	
+	private function logout(){
+		$this->logoutView->setUsername($this->userName);
+		$this->logoutView->setUserMessage($this->textMessage);
+		$this->textMessage = "";
+		return $this->logoutView->showLogout();
+	}
+	
+	private function checkIfUserIsLoggedIn(){
+		$clientName;
+		$clientSession;		
+												//Kollar om användarens serveruppgifter är lagrade i sessionen
+		$clientName = $this->model->doesSessionExist($this->userServerSettings); //
+		if($clientName != false){
+			$this->userName = $clientName;	
+			$this->isLoggedIn = TRUE;
+			return true;
+		}
+			
+		if($this->cookies->checkUserCookies() === true){ //Kollar kakor för användarnamn och lösenord är satta
+			$userCookies = $this->cookies->loadUserFromCookie(); //Returns array eller false
+			if($userCookies != false){
+															//Kollar om sessionen finns sparad eller en äldre version
+				$clientSession = $this->model->verifyRememberedClient($userCookies, $this->userServerSettings);
+				if($clientSession === false){
+					$this->textMessage = self::$notCookieMessage;
+					return false;
 				}
-				$this->userName = $clientSession['user'];
-				$this->isLoggedIn = TRUE;
-				return true;
-			}
-			else{
-				$this->textMessage = self::$notCookieMessage;
-				return false;
+				if($clientSession != ""){
+					$this->userName = $clientSession;
+					$this->textMessage = self::$cookieMessage;
+					$this->isLoggedIn = TRUE;
+					return true;
+				}
 			}	
 		}
+		return false;
 	}
 	
 	private function checkIfUserPressedLogin(){
@@ -135,36 +158,37 @@ class LoginController {
 	}
 	
 	private function saveSessionAndSetMessage(){
-		//Om användaren kryssat i "Håll mig inloggad"
-		if($this->loginView->didUserWantToBeRemembered()){
-			return $this->userWantsToBeRemembered();
+		if($this->model->saveUserSession($this->userData, $this->userServerSettings)){
+			$this->isLoggedIn = TRUE;
+			//Om användaren kryssat i "Håll mig inloggad"
+			if($this->loginView->didUserWantToBeRemembered()){
+				return $this->userWantsToBeRemembered();
+			}
+			else{//Om användaren inte vill bli hållen inloggad
+				return $this->userDontWantToBeRemembered(); 
+			}
 		}
-		else{//Om användaren inte vill bli hållas inloggad
-			return $this->userDontWantToBeRemembered();
-		}
-		//return false;
 	}
 	
 	private function userWantsToBeRemembered(){
 		$this->savedSession = TRUE;
-			if($this->model->saveUserSession($this->userData) && $this->cookies->saveUser($this->userData)){
-				$this->textMessage = self::$savedSessionMessage;
-				return true;
-			}
-			else{//Om sessionen inte lyckats sparas
-				$this->textMessage = self::$validUserMessage;
-				return true;
-			}
+		if($this->model->saveRememberedUserSession($this->userData, $this->userServerSettings) && 
+			$this->cookies->saveUserCookies($this->userData))
+			{
+			$this->textMessage = self::$savedSessionMessage;
+			return true;
+		}
+		else{											//Om sessionen inte lyckats sparas
+			$this->textMessage = self::$validUserMessage;
+			return true;
+		}
 	}	
 	
 	private function userDontWantToBeRemembered(){
-		if($this->model->saveSession($this->userName)){
-			if($this->textMessage === ""){
-				$this->savedSession = FALSE;
-				$this->textMessage = self::$validUserMessage;
-			}
-			return true;
+		if($this->textMessage === ""){
+			$this->savedSession = FALSE;
+			$this->textMessage = self::$validUserMessage;
 		}
-		return false;
+		return true;
 	}
 }

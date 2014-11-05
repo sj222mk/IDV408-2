@@ -4,17 +4,38 @@ namespace view;
 
 class LoginView {
 	private $cookies;
-	private $errorMessage = "";
-	private static $messageCookie = "Message";
+	private $userMessage = "";
 	private $username = "";
+	
 	private static $userID = 'userID';
 	private static $password = 'PasswordID'; 
+	private static $messageCookie = "Message";
+	
 	private static $outLoggedMessage = "Du har nu loggat ut";
 	
 	public function __construct(CookieStorage $cookies) {
 		$this->cookies = $cookies;
 	}
-
+	
+	public function setShowRegisterLink(){
+		$this->showRegisterLink = true;	
+	}
+	
+	public function setUserMessage($message){
+		$this->userMessage = $message;
+	}
+	
+	public function setUsername($name){
+		$this->username = $name;
+	}
+	
+	public function didUserPressCreateNew(){
+		if(key($_GET) === self::$register){
+			return true;
+		}
+		return false;
+	}
+	
 	public function didUserPressLogin() {
 		
 		if (isset($_POST["login"])){
@@ -27,19 +48,25 @@ class LoginView {
 			else{
 				if($_POST[self::$userID] === ""){
 					$this->username = $_POST[self::$userID];
-					$this->errorMessage = 'Användarnamn saknas';
+					$this->userMessage = 'Användarnamn saknas';
 				}
 				else{
-					$this->errorMessage = 'Lösenord saknas';
+					$this->userMessage = 'Lösenord saknas';
 				}
-			$this->cookies->save(self::$messageCookie, $this->errorMessage);
+			$this->cookies->save(self::$messageCookie, $this->userMessage);
 			}
 		return false;
 		}
 	}
 	
 	public function getUserData(){
-		$data = array("user" => $_POST[self::$userID], "pw" => $_POST[self::$password]);
+		$user = $_POST[self::$userID];
+		$user = trim($user);
+		$password = $_POST[self::$password];
+		$password = trim($password);
+		
+		$data = array("user" => $user, "password" => $password);
+		
 		if ($data != ""){
 			return $data;
 		}	
@@ -52,43 +79,36 @@ class LoginView {
 		}
 	 }
 	 
-	//Kontroll av mest aktuellt felmeddelande (vissa sätts av controllern, vissa av vyn - om de saknas kollas cookies!)
-	private function setNewestErrorMessage($message){
-		$userMessage = "";
-		
-		if($message != ""){
-			$userMessage = $message;
-		}
-		elseif($this->errorMessage != ""){
-			$userMessage = $this->errorMessage;	
-		}
-		else{
-			$userMessage = $this->cookies->loadMessage(self::$messageCookie); 
+	//Kontroll av mest aktuellt felmeddelande 
+	private function setNewestUserMessage(){
+		if($this->userMessage === ""){
+			$this->userMessage = $this->cookies->loadCookie(self::$messageCookie);
 		}
 		
-		return $userMessage;
+		if($this->userMessage != self::$outLoggedMessage){
+			$this->cookies->save(self::$messageCookie, $this->userMessage);
+		}
+		
+		return $this->userMessage;
 	}
 	
-	public function showLogin($message) {
-		$this->errorMessage = $this->setNewestErrorMessage($message);
-		if($this->errorMessage != self::$outLoggedMessage){
-			$this->cookies->save(self::$messageCookie, $this->errorMessage);
-		}
+	public function showLogin() {
+		$userMessage = $this->setNewestUserMessage();
 		
 		$ret = "<header>
-					<h2>Ej inloggad<h2> 
+					<h2>Ej inloggad</h2> 
 				</header>
 				<fieldset>
-					<form method='post'>
 					<legend>Login - Skriv in användarnamn och lösenord</legend>
-					<p>$this->errorMessage</p> 
+					<form method='post'>
+					<p>$this->userMessage</p> 
 					<label for='UserID'>Användarnamn :</label>
-					<input id='UserID' name='userID' type='text' value=$this->username>
+					<input autofocus id='UserID' name='userID' type='text' value=$this->username>
 					<label for='PasswordID'>Lösenord :</label>
 					<input id='PasswordID' name='PasswordID' type='password' value=''>
 					<label for='AutologinID'>Håll mig inloggad :</label>
 					<input id='AutologinID' name='AutologinID' type='checkbox'>
-					<button type='submit'name='login'>Logga in</button>
+					<button type='submit' name='login'>Logga in</button>
 					</form>
 				</fieldset>";
 		

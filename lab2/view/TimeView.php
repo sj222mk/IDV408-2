@@ -7,14 +7,15 @@ class TimeView{
 	
 	function setTime(){
     setlocale(LC_ALL, "sv_SE");
-   
+    
 	$day = $this->setDay(date('w'));
 	$date = strftime('%#d');
 	$month = $this->setMonth(date('m'));
 	$year = strftime('%Y');
-	$time = date('H:i:s');
+	$time = date('i:s');
+	$Hour = date('H') + 1; //Pga differens lokalt o på servern?
 	
-	$ret = $day . ', den ' . $date .' ' . $month . ' år ' . $year . '. Klockan är [' . $time . '].';
+	$ret = '<p>' . $day . ', den ' . $date .' ' . $month . ' år ' . $year . '. Klockan är [' .$Hour . ":" . $time . ']. </p>';
 	return $ret;
 	} 
 	
@@ -22,25 +23,25 @@ class TimeView{
 		switch($d){ 
         case '0': 
             $d = 'Söndag'; 
-        break; 
+        	break; 
         case '1': 
             $d = 'Måndag'; 
-        break; 
+        	break; 
         case '2': 
             $d = 'Tisdag'; 
 			break;
 		case '3': 
             $d = 'Onsdag'; 
-        break; 
+        	break; 
 		case '4': 
             $d = 'Torsdag'; 
-        break; 
+        	break; 
 		case '5': 
             $d = 'Fredag'; 
-        break; 
+        	break; 
 		case '6': 
             $d = 'Lördag'; 
-        break; 
+        	break; 
     	} 
 		
 		return $d;
@@ -48,42 +49,42 @@ class TimeView{
 	
 	function setMonth($m){
 		switch($m){ 
-        case '01': 
-            $m = 'Januari'; 
-        break; 
         case '1': 
-            $m = 'Februari'; 
-        break; 
+            $m = 'Januari'; 
+        	break; 
         case '2': 
+            $m = 'Februari'; 
+        	break; 
+        case '3': 
             $m = 'Mars'; 
 			break;
-		case '3': 
-            $m = 'April'; 
-        break; 
 		case '4': 
-            $m = 'Maj'; 
-        break; 
+            $m = 'April'; 
+        	break; 
 		case '5': 
-            $m = 'Juni'; 
-        break; 
+            $m = 'Maj'; 
+        	break; 
 		case '6': 
-            $m = 'Juli'; 
-        break; 
+            $m = 'Juni'; 
+        	break; 
 		case '7': 
+            $m = 'Juli'; 
+        	break; 
+		case '8': 
             $m = 'Augusti'; 
 			break;
-		case '8': 
-            $m = 'September'; 
-        break; 
 		case '9': 
-            $m = 'Oktober'; 
-        break; 
+            $m = 'September'; 
+        	break; 
 		case '10': 
-            $m = 'November'; 
-        break; 
+            $m = 'Oktober'; 
+        	break; 
 		case '11': 
+            $m = 'November'; 
+        	break; 
+		case '12': 
             $m = 'December'; 
-        break; 
+        	break; 
     	} 
 		
 		return $m;
