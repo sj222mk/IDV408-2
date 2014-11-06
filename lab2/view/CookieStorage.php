@@ -9,7 +9,7 @@ class CookieStorage {
 	private static $password = 'password';
 	
 	public function save($name, $string) {
-		$cookieTime = 60;	//Cookiers giltighetstid = 1 minut
+		$cookieTime = 3600;	//Cookiers giltighetstid = 1 minut
 		
 		if(setcookie($name, $string, time() + $cookieTime)){
 			return true;
