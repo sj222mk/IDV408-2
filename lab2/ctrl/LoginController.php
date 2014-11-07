@@ -17,6 +17,7 @@ class LoginController {
 	
 	private $isLoggedIn;
 	private $savedSession;
+	private $sessID;
 	private $sessionArray;
 	private $textMessage = "";
 	private $userData = "";
@@ -44,6 +45,7 @@ class LoginController {
 	public function doLogin() {
 		//Kolla av vem användaren är
 		$this->userServerSettings = $this->servers->getUserServerSettings(); 
+		$this->sessID = $this->cookies->getSessid();
 		
 		//Kontrollera om användaren är inloggad
 		if(!$this->checkIfUserIsLoggedIn()){ 
@@ -79,10 +81,10 @@ class LoginController {
 		
 		while($this->isLoggedIn === TRUE){
 			if ($this->logoutView->didUserPressLogout()){
-				if($this->model->unsetSession() &&	
-					$this->model->removeRememberedUserSession($this->userName) &&				
-					$this->cookies->removeUserCookies())
-					{
+				if($this->cookies->removeUserCookies() && 
+					$this->model->unsetSession() &&	
+					$this->model->removeRememberedUserSession($this->userName)				
+					){
 					$this->textMessage = self::$outlogMessage;
 					$this->savedSession = false;
 					$this->isLoggedIn = FALSE;	
@@ -119,6 +121,7 @@ class LoginController {
 		$clientName = $this->model->doesSessionExist($this->userServerSettings); //
 		if($clientName != false){
 			$this->userName = $clientName;	
+			$this->textMessage = "";
 			$this->isLoggedIn = TRUE;
 			return true;
 		}
@@ -127,14 +130,23 @@ class LoginController {
 			$userCookies = $this->cookies->loadUserFromCookie(); //Returns array eller false
 			if($userCookies != false){
 															//Kollar om sessionen finns sparad eller en äldre version
-				$clientSession = $this->model->verifyRememberedClient($userCookies, $this->userServerSettings);
+				$clientSession = $this->model->verifyRememberedClient($userCookies, $this->userServerSettings, $this->sessID);
 				if($clientSession === false){
 					$this->textMessage = self::$notCookieMessage;
 					return false;
 				}
-				if($clientSession != ""){
-					$this->userName = $clientSession;
+				if($clientSession['session'] === "new"){
 					$this->textMessage = self::$cookieMessage;
+				}
+				elseif($clientSession['session'] === "old"){
+					$this->textMessage = "";
+				}
+				$this->userName = $clientSession['user'];
+				$this->userData['user'] = $clientSession['user'];
+				if($this->model->saveUserSession($this->userData, $this->userServerSettings) &&
+					$this->model->saveRememberedUserSession($this->userData, $this->userServerSettings, $this->sessID))
+				{
+					
 					$this->isLoggedIn = TRUE;
 					return true;
 				}
@@ -172,7 +184,7 @@ class LoginController {
 	
 	private function userWantsToBeRemembered(){
 		$this->savedSession = TRUE;
-		if($this->model->saveRememberedUserSession($this->userData, $this->userServerSettings) && 
+		if($this->model->saveRememberedUserSession($this->userData, $this->userServerSettings, $this->sessID) && 
 			$this->cookies->saveUserCookies($this->userData))
 			{
 			$this->textMessage = self::$savedSessionMessage;

@@ -8,6 +8,12 @@ class CookieStorage {
 	private static $user = 'user';
 	private static $password = 'password';
 	
+	public function getSessid(){
+		$cookie = session_id();
+		echo $cookie;
+		return $cookie;
+	}
+	
 	public function save($name, $string) {
 		$cookieTime = 3600;	//Cookiers giltighetstid = 1 minut
 		
