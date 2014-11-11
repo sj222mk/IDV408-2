@@ -72,7 +72,6 @@ class LoginController {
 				return $this->login();
 			}
 		}
-		//$this->isLoggedIn === TRUE;
 		return $this->doLogout();
 	}
 	

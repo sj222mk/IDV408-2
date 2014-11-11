@@ -12,8 +12,6 @@ $a = session_id();
 if(empty($a)){
 	session_start();
 }
-//session_start();
-
 
 $lc = new \controller\LoginController();
 $t = new \view\TimeView();
